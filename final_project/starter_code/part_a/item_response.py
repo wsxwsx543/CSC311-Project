@@ -4,7 +4,7 @@ sys.path.append("../")
 from utils import *
 
 import numpy as np
-
+import random
 import matplotlib.pyplot as plt
 
 
@@ -170,10 +170,10 @@ def main():
     train_data = load_train_csv("../data")
     # You may optionally use the sparse matrix.
     sparse_matrix = load_train_sparse("../data")
-    print(sparse_matrix.shape)
+    # print(sparse_matrix.shape)
     # print(sparse_matrix)
     val_data = load_valid_csv("../data")
-    print(len(val_data["user_id"]))
+    # print(len(val_data["user_id"]))
     test_data = load_public_test_csv("../data")
 
     #####################################################################
@@ -184,6 +184,7 @@ def main():
     NUM_ITERS = 150
     LEARNING_RATE = 0.003
     theta, beta, train_acc_lst, val_acc_lst, train_nlld, val_nlld = irt(train_data, val_data, LEARNING_RATE, NUM_ITERS)
+    print(theta)
     
     plt.figure(figsize=(12, 6))
     x = [i for i in range(NUM_ITERS)]
@@ -211,7 +212,16 @@ def main():
     # TODO:                                                             #
     # Implement part (c)                                                #
     #####################################################################
-    pass
+    sample_questions = random.sample([i for i in range(1774)], 5)
+    theta = np.linspace(-5.0, 5.0, 100)
+    lines = []
+    for q in sample_questions:
+        q_beta = beta[q]
+        p = sigmoid(theta-q_beta)
+        line, = plt.plot(theta, p, label="Question " + str(q) + " with beta {:.2f}".format(q_beta))
+    plt.legend()
+    plt.show()
+
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
