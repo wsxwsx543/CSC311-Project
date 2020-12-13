@@ -102,9 +102,12 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
     # Define optimizers and loss function.
     optimizer = optim.SGD(model.parameters(), lr=lr)
     num_student = train_data.shape[0]
-
+    
+    train_acc_list = []
     valid_acc_list = []
     train_loss_list = []
+    valid_loss_list = []
+    train_dict = load_train_csv('../data')
 
     for epoch in range(0, num_epoch):
         train_loss = 0.
@@ -121,73 +124,97 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
             target[0][nan_mask] = output[0][nan_mask]
 
             reg_loss = model.get_weight_norm() * lamb / 2.
-
             loss = torch.sum((output - target) ** 2.) + reg_loss
             loss.backward()
 
             train_loss += loss.item()
             optimizer.step()
 
-        valid_acc = evaluate(model, zero_train_data, valid_data)
-        valid_acc_list.append((epoch, valid_acc))
-        train_loss_list.append((epoch, train_loss))
-        print("Epoch: {} \tTraining Cost: {:.6f}\t "
-              "Valid Acc: {}".format(epoch, train_loss, valid_acc))
-    
-    display_plot(valid_acc_list, train_loss_list, "Validation Accuracy", "Training Loss", number=0)
+        if epoch % 5 == 0:
+            valid_acc, valid_loss = evaluate(model, zero_train_data, valid_data, lamb)
+            #train_acc = evaluate_train(model, train_dict, zero_train_data)
+            train_acc = 0
+            train_acc_list.append((epoch, train_acc))
+            valid_acc_list.append((epoch, valid_acc))
+            train_loss_list.append((epoch, train_loss))
+            valid_loss_list.append((epoch, valid_loss))
+            print("Epoch: {} \t"
+              "Training Accuracy: {:.6f}\t "
+              "Training Cost: {:.6f}\t "
+              "Validation Accuracy: {:.6f}\t "
+              "Validation Cost: {:.6f}\t ".format(epoch, train_acc, train_loss, valid_acc, valid_loss))
 
-def display_plot(valid_acc_list, train_loss_list, label_0, label_1, number=0):
-    """ Displays validation accuracy and training loss curves.
+    display_plot(valid_acc_list, "Validation Accuracy")
+    display_plot(valid_loss_list, "Validation Loss")
+    display_plot(train_acc_list, "Training Accuracy")
+    display_plot(train_loss_list, "Training Loss")
+    
+def evaluate_train(model, train_dict, train_data):
+    model.eval()
+
+    total = 0
+    correct = 0
+
+    for i, u in enumerate(train_dict["user_id"]):
+        inputs = Variable(train_data[u]).unsqueeze(0)
+        output = model(inputs)
+
+        guess = output[0][train_dict["question_id"][i]].item() >= 0.5
+        if guess == train_dict["is_correct"][i]:
+            correct += 1
+        total += 1
+    return correct / float(total)
+
+def display_plot(data_list, label):
+    """ Displays curve.
     :param valid: Validation accuracy
     :param y_label: Y-axis label of the plot
     :param number: The number of the plot
     :return: None
     """
-    # Display validation accuracy curve.
-    plt.figure(number)
     plt.clf()
-    valid_acc = np.array(valid_acc_list)
-    plt.plot(valid_acc[:, 0], valid_acc[:, 1], "g")
+    data = np.array(data_list)
+    plt.plot(data[:, 0], data[:, 1], "g")
     plt.xlabel("Epoch")
-    plt.ylabel(label_0)
+    plt.ylabel(label)
     plt.show()
-
-    # Display traning loss curve.
-    train_loss = np.array(train_loss_list)
-    plt.plot(train_loss[:, 0], train_loss[:, 1], "g")
-    plt.xlabel("Epoch")
-    plt.ylabel(label_1)
-    plt.show()
-    
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
 
 
-def evaluate(model, train_data, valid_data):
+def evaluate(model, train_data, valid_data, lamb):
     """ Evaluate the valid_data on the current model.
 
     :param model: Module
     :param train_data: 2D FloatTensor
     :param valid_data: A dictionary {user_id: list,
     question_id: list, is_correct: list}
-    :return: float
+    :return: A tuple (acc, loss)
     """
     # Tell PyTorch you are evaluating the model.
     model.eval()
 
     total = 0
     correct = 0
+    loss = 0.
+
+    reg_loss = model.get_weight_norm() * lamb / 2.
 
     for i, u in enumerate(valid_data["user_id"]):
         inputs = Variable(train_data[u]).unsqueeze(0)
         output = model(inputs)
 
         guess = output[0][valid_data["question_id"][i]].item() >= 0.5
-        if guess == valid_data["is_correct"][i]:
+        target = valid_data["is_correct"][i]
+        if guess == target:
             correct += 1
+        
+        loss_tensor = torch.sum((output - target) ** 2.) + reg_loss
+        loss += loss_tensor.item()
+
         total += 1
-    return correct / float(total)
+    return (correct / float(total), loss)
 
 
 def main():
@@ -205,8 +232,8 @@ def main():
 
     # Set optimization hyperparameters.
 
-    lr = 0.01
-    num_epoch = 180 # 100 is sufficient
+    lr = 0.007
+    num_epoch = 250 # 150 is sufficient
     lamb = 0.0
 
     train(model, lr, lamb, train_matrix, zero_train_matrix,
@@ -218,3 +245,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
