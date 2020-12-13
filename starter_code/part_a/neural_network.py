@@ -108,7 +108,7 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
     train_loss_list = []
     valid_loss_list = []
     train_dict = load_train_csv('../data')
-
+    
     for epoch in range(0, num_epoch):
         train_loss = 0.
 
@@ -130,7 +130,7 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
             train_loss += loss.item()
             optimizer.step()
 
-        if epoch % 5 == 0:
+        if epoch % 2 == 0:  # Speed up
             valid_acc, valid_loss = evaluate(model, zero_train_data, valid_data, lamb)
             #train_acc = evaluate_train(model, train_dict, zero_train_data)
             train_acc = 0
@@ -167,9 +167,8 @@ def evaluate_train(model, train_dict, train_data):
 
 def display_plot(data_list, label):
     """ Displays curve.
-    :param valid: Validation accuracy
-    :param y_label: Y-axis label of the plot
-    :param number: The number of the plot
+    :param data_list: Data lsit to display
+    :param label: Y-axis label of the plot
     :return: None
     """
     plt.clf()
@@ -232,10 +231,10 @@ def main():
 
     # Set optimization hyperparameters.
 
-    lr = 0.007
-    num_epoch = 250 # 150 is sufficient
+    lr = 0.005
+    num_epoch = 350 # 150 is sufficient
     lamb = 0.0
-
+    
     train(model, lr, lamb, train_matrix, zero_train_matrix,
           valid_data, num_epoch)
     #####################################################################
