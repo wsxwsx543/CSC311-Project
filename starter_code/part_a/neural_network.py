@@ -94,7 +94,6 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
     :return: None
     """
     # TODO: Add a regularizer to the cost function.
-    # On line 123-125 
     
     # Tell PyTorch you are training the model.
     model.train()
@@ -130,59 +129,81 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
             train_loss += loss.item()
             optimizer.step()
 
-        if epoch % 2 == 0:  # Speed up
-            valid_acc, valid_loss = evaluate(model, zero_train_data, valid_data, lamb)
-            #train_acc = evaluate_train(model, train_dict, zero_train_data)
-            train_acc = 0
+        if epoch % 5 == 0:  # Speed up
+            valid_acc, valid_loss = evaluate_valid(model, zero_train_data, valid_data, lamb)
+            train_acc, train_loss_temp = evaluate_train(model, train_dict, zero_train_data, lamb)
             train_acc_list.append((epoch, train_acc))
             valid_acc_list.append((epoch, valid_acc))
-            train_loss_list.append((epoch, train_loss))
+            train_loss_list.append((epoch, train_loss_temp))
             valid_loss_list.append((epoch, valid_loss))
             print("Epoch: {} \t"
               "Training Accuracy: {:.6f}\t "
-              "Training Cost: {:.6f}\t "
+              "Training Loss: {:.6f}\t "
               "Validation Accuracy: {:.6f}\t "
-              "Validation Cost: {:.6f}\t ".format(epoch, train_acc, train_loss, valid_acc, valid_loss))
+              "Validation Loss: {:.6f}\t ".format(epoch, train_acc, train_loss_temp, valid_acc, valid_loss))
 
-    display_plot(valid_acc_list, "Validation Accuracy")
-    display_plot(valid_loss_list, "Validation Loss")
-    display_plot(train_acc_list, "Training Accuracy")
-    display_plot(train_loss_list, "Training Loss")
+    display_plots(train_acc_list, train_loss_list, valid_acc_list, valid_loss_list)
+
+
+def display_plots(train_acc_list, train_loss_list, valid_acc_list, valid_loss_list):
+    """ Displays the training/validation accuracy/loss curves.
+    :param train_acc_list: training accuracy data
+    :param train_loss_list: training loss data
+    :param valid_acc_list: validation accuracy data
+    :param valid_loss_list: validation loss data
+    :return: None
+    """
+    fig, axs = plt.subplots(2, 2)
+    data = np.array(train_acc_list)
+    axs[0, 0].plot(data[:, 0], data[:, 1], "g")
+    axs[0, 0].set(xlabel="Epoch", ylabel="Training Accuracy")
+    data = np.array(train_loss_list)
+    axs[0, 1].plot(data[:, 0], data[:, 1], "g")
+    axs[0, 1].set(xlabel="Epoch", ylabel="Training Loss")
+    data = np.array(valid_acc_list)
+    axs[1, 0].plot(data[:, 0], data[:, 1], "g")
+    axs[1, 0].set(xlabel="Epoch", ylabel="Validation Accuracy")
+    data = np.array(valid_loss_list)
+    axs[1, 1].plot(data[:, 0], data[:, 1], "g")
+    axs[1, 1].set(xlabel="Epoch", ylabel="Validation Loss")
+    plt.show()
+
     
-def evaluate_train(model, train_dict, train_data):
+def evaluate_train(model, train_dict, train_data, lamb):
+    """ Evaluate the train_data on the current model.
+
+    :param model: Module
+    :param train_data: 2D FloatTensor
+    :param train_dict: A dictionary {user_id: list,
+    question_id: list, is_correct: list}
+    :return: A tuple (acc, loss)
+    """
     model.eval()
+
+    reg_loss = model.get_weight_norm() * lamb / 2.
 
     total = 0
     correct = 0
+    loss = 0.
 
     for i, u in enumerate(train_dict["user_id"]):
         inputs = Variable(train_data[u]).unsqueeze(0)
         output = model(inputs)
 
         guess = output[0][train_dict["question_id"][i]].item() >= 0.5
-        if guess == train_dict["is_correct"][i]:
+
+        target = train_dict["is_correct"][i]
+
+        if guess == target:
             correct += 1
         total += 1
-    return correct / float(total)
 
-def display_plot(data_list, label):
-    """ Displays curve.
-    :param data_list: Data lsit to display
-    :param label: Y-axis label of the plot
-    :return: None
-    """
-    plt.clf()
-    data = np.array(data_list)
-    plt.plot(data[:, 0], data[:, 1], "g")
-    plt.xlabel("Epoch")
-    plt.ylabel(label)
-    plt.show()
-    #####################################################################
-    #                       END OF YOUR CODE                            #
-    #####################################################################
+        loss_tensor = (output[0][train_dict["question_id"][i]] - target) ** 2. + reg_loss
+        loss += loss_tensor.item()
+    return (correct/float(total), loss)
 
 
-def evaluate(model, train_data, valid_data, lamb):
+def evaluate_valid(model, train_data, valid_data, lamb):
     """ Evaluate the valid_data on the current model.
 
     :param model: Module
@@ -191,7 +212,6 @@ def evaluate(model, train_data, valid_data, lamb):
     question_id: list, is_correct: list}
     :return: A tuple (acc, loss)
     """
-    # Tell PyTorch you are evaluating the model.
     model.eval()
 
     total = 0
@@ -208,12 +228,11 @@ def evaluate(model, train_data, valid_data, lamb):
         target = valid_data["is_correct"][i]
         if guess == target:
             correct += 1
-        
-        loss_tensor = torch.sum((output - target) ** 2.) + reg_loss
+        loss_tensor = (output[0][valid_data["question_id"][i]] - target) ** 2. + reg_loss
         loss += loss_tensor.item()
 
         total += 1
-    return (correct / float(total), loss)
+    return (correct/float(total), loss)
 
 
 def main():
@@ -224,15 +243,15 @@ def main():
     # Try out 5 different k and select the best k using the             #
     # validation set.                                                   #
     #####################################################################
-    # Set model hyperparameters.
-    k = 10
     D = train_matrix.shape[1]
+    
+    # Set model hyperparameters.
+    k = 10      # k_range = [10, 50, 100, 200, 500]
     model = AutoEncoder(D, k)
 
     # Set optimization hyperparameters.
-
     lr = 0.005
-    num_epoch = 350 # 150 is sufficient
+    num_epoch = 200 # 150 is sufficient
     lamb = 0.0
     
     train(model, lr, lamb, train_matrix, zero_train_matrix,
@@ -244,4 +263,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
