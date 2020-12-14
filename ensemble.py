@@ -35,13 +35,14 @@ def single_round_prediction_IRT(data, val_data, test_data, base_size, lr = 0.003
     return np.array(val_pred), np.array(test_pred)
         
     
-def bagging_IRT_avg_pred(data, val_data, test_data, base_size, lr = 0.003, iterations = 50):
+def bagging_IRT_avg_pred(data, val_data, test_data, lr = 0.003, iterations = 50):
     length = len(data['user_id'])
     val_length = len(val_data['user_id'])
     test_length = len(test_data['user_id'])
     
     val_overall_pred = np.zeros((val_length))
     test_overall_pred = np.zeros((test_length))
+    base_size = length
     
     for i in range(3):
         val_single_round_pred, test_single_round_pred = single_round_prediction_IRT(data, val_data, test_data, base_size, lr, iterations)
@@ -51,8 +52,8 @@ def bagging_IRT_avg_pred(data, val_data, test_data, base_size, lr = 0.003, itera
     return 1*(val_overall_pred/3 >= 0.5), 1*(test_overall_pred/3 >= 0.5)
  
     
-def bagging_IRT_evaluate(data, val_data, test_data, base_size, lr = 0.003, iterations = 50):
-    val_avg_pred, test_avg_pred = bagging_IRT_avg_pred(data, val_data, test_data, base_size, lr, iterations)
+def bagging_IRT_evaluate(data, val_data, test_data, lr = 0.003, iterations = 50):
+    val_avg_pred, test_avg_pred = bagging_IRT_avg_pred(data, val_data, test_data, lr, iterations)
     
     val_accu = np.sum((val_data["is_correct"] == np.array(val_avg_pred))) / len(val_data["is_correct"])
     test_accu = np.sum((test_data["is_correct"] == np.array(test_avg_pred))) / len(test_data["is_correct"])
@@ -64,14 +65,12 @@ def main():
     train_data = load_train_csv("./data")
     val_data = load_valid_csv("./data")
     test_data = load_public_test_csv("./data")
-    base_size = 10000
     LEARNING_RATE = 0.003
-    NUM_ITERATIONS = 150
+    NUM_ITERATIONS = 30
     
-    val_accu, test_accu = bagging_IRT_evaluate(train_data, val_data, test_data, base_size, LEARNING_RATE, NUM_ITERATIONS)
+    val_accu, test_accu = bagging_IRT_evaluate(train_data, val_data, test_data, LEARNING_RATE, NUM_ITERATIONS)
     print("Validation Accuracy is: {} \n Test Accuracy is: {}".format(val_accu, test_accu))
 
-    
 if __name__ == "__main__":
     main()
     
