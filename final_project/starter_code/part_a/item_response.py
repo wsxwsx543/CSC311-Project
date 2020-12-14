@@ -97,7 +97,8 @@ def update_theta_beta(data, lr, theta, beta):
     for j in range(M):
         dbeta.append(-1*sum(beta_mid[j]))
 
-    return theta - lr * np.array(dtheta), beta - lr * np.array(dbeta)
+    theta -= lr * np.array(dtheta, dtype=np.float32)
+    beta -= lr * np.array(dbeta, dtype=np.float32)
 
     #####################################################################
     #                       END OF YOUR CODE                            #
@@ -119,19 +120,23 @@ def irt(data, val_data, lr, iterations):
     :return: (theta, beta, val_acc_lst)
     """
     # TODO: Initialize theta and beta.
-    theta = np.array([0 for i in range(542)])
-    beta = np.array([0 for j in range(1774)])
+    theta = np.array([0 for i in range(542)], dtype=np.float32)
+    beta = np.array([0 for j in range(1774)], dtype=np.float32)
 
     train_acc_lst = []
     val_acc_lst = []
     train_nlld = []
     val_nlld = []
+    train_lld = []
+    val_lld = []
 
     for i in range(iterations):
         train_neg_lld = neg_log_likelihood(data, theta=theta, beta=beta)
         val_neg_lld = neg_log_likelihood(val_data, theta=theta, beta=beta)
         train_nlld.append(train_neg_lld)
         val_nlld.append(val_neg_lld)
+        train_lld.append(-1*train_neg_lld)
+        val_lld.append(-1*val_neg_lld)
 
         val_score = evaluate(data=val_data, theta=theta, beta=beta)
         val_acc_lst.append(val_score)
@@ -144,7 +149,7 @@ def irt(data, val_data, lr, iterations):
         theta, beta = update_theta_beta(data, lr, theta, beta)
 
     # TODO: You may change the return values to achieve what you want.
-    return theta, beta, train_acc_lst, val_acc_lst, train_nlld, val_nlld
+    return theta, beta, train_acc_lst, val_acc_lst, train_nlld, val_nlld, train_lld, val_lld
 
 
 def evaluate(data, theta, beta):
@@ -181,24 +186,30 @@ def main():
     # Tune learning rate and number of iterations. With the implemented #
     # code, report the validation and test accuracy.                    #
     #####################################################################
-    NUM_ITERS = 150
-    LEARNING_RATE = 0.003
-    theta, beta, train_acc_lst, val_acc_lst, train_nlld, val_nlld = irt(train_data, val_data, LEARNING_RATE, NUM_ITERS)
-    print(theta)
+    NUM_ITERS = 70
+    LEARNING_RATE = 0.005
+    theta, beta, train_acc_lst, val_acc_lst, train_nlld, val_nlld, train_lld, val_lld = irt(train_data, val_data, LEARNING_RATE, NUM_ITERS)
+    # print(theta)
     
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(18, 6))
     x = [i for i in range(NUM_ITERS)]
-    plt.subplot(1, 2, 1)
+    plt.subplot(1, 3, 1)
     train_line, = plt.plot(x, train_acc_lst)
     val_line, = plt.plot(x, val_acc_lst)
     plt.title("Accuracy")
     l1 = plt.legend([train_line, val_line], ["train", "validation"])
 
-    plt.subplot(1, 2, 2)
+    plt.subplot(1, 3, 2)
     train_line, = plt.plot(x, train_nlld)
     val_line, = plt.plot(x, val_nlld)
     plt.title("Negative log-likelihood")
     l2 = plt.legend([train_line, val_line], ["train", "validation"])
+
+    plt.subplot(1, 3, 3)
+    train_line, = plt.plot(x, train_lld)
+    val_line, = plt.plot(x, val_lld)
+    plt.title("log-likelihood")
+    l3 = plt.legend([train_line, val_line], ["train", "validation"])
     plt.show()
 
     val_acc = evaluate(val_data, theta, beta)
