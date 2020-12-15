@@ -107,7 +107,8 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
     train_loss_list = []
     valid_loss_list = []
     train_dict = load_train_csv('../data')
-    
+
+    maxValidAcc = 0.
     for epoch in range(0, num_epoch):
         train_loss = 0.
 
@@ -130,8 +131,8 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
             optimizer.step()
 
         if epoch % 5 == 0:  # Speed up
-            valid_acc, valid_loss = evaluate_valid(model, zero_train_data, valid_data, lamb)
-            train_acc, train_loss_temp = evaluate_train(model, train_dict, zero_train_data, lamb)
+            valid_acc, valid_loss = evaluate(model, zero_train_data, valid_data)
+            train_acc, train_loss_temp = evaluate(model, zero_train_data, train_dict)
             train_acc_list.append((epoch, train_acc))
             valid_acc_list.append((epoch, valid_acc))
             train_loss_list.append((epoch, train_loss_temp))
@@ -141,19 +142,24 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
               "Training Loss: {:.6f}\t "
               "Validation Accuracy: {:.6f}\t "
               "Validation Loss: {:.6f}\t ".format(epoch, train_acc, train_loss_temp, valid_acc, valid_loss))
+            if valid_acc > maxValidAcc:
+                maxValidAcc = valid_acc
+    print("The highest validation accuracy reached is {:.6f}".format(maxValidAcc))
 
-    display_plots(train_acc_list, train_loss_list, valid_acc_list, valid_loss_list)
+    display_plots(train_acc_list, train_loss_list, valid_acc_list, valid_loss_list, lamb)
 
 
-def display_plots(train_acc_list, train_loss_list, valid_acc_list, valid_loss_list):
+def display_plots(train_acc_list, train_loss_list, valid_acc_list, valid_loss_list, lamb):
     """ Displays the training/validation accuracy/loss curves.
     :param train_acc_list: training accuracy data
     :param train_loss_list: training loss data
     :param valid_acc_list: validation accuracy data
     :param valid_loss_list: validation loss data
+    :param lamb: the lambda value
     :return: None
     """
     fig, axs = plt.subplots(2, 2)
+    fig.suptitle("lambda={}".format(lamb))
     data = np.array(train_acc_list)
     axs[0, 0].plot(data[:, 0], data[:, 1], "g")
     axs[0, 0].set(xlabel="Epoch", ylabel="Training Accuracy")
@@ -168,43 +174,9 @@ def display_plots(train_acc_list, train_loss_list, valid_acc_list, valid_loss_li
     axs[1, 1].set(xlabel="Epoch", ylabel="Validation Loss")
     plt.show()
 
-    
-def evaluate_train(model, train_dict, train_data, lamb):
-    """ Evaluate the train_data on the current model.
 
-    :param model: Module
-    :param train_data: 2D FloatTensor
-    :param train_dict: A dictionary {user_id: list,
-    question_id: list, is_correct: list}
-    :return: A tuple (acc, loss)
-    """
-    model.eval()
-
-    reg_loss = model.get_weight_norm() * lamb / 2.
-
-    total = 0
-    correct = 0
-    loss = 0.
-
-    for i, u in enumerate(train_dict["user_id"]):
-        inputs = Variable(train_data[u]).unsqueeze(0)
-        output = model(inputs)
-
-        guess = output[0][train_dict["question_id"][i]].item() >= 0.5
-
-        target = train_dict["is_correct"][i]
-
-        if guess == target:
-            correct += 1
-        total += 1
-
-        loss_tensor = (output[0][train_dict["question_id"][i]] - target) ** 2. + reg_loss
-        loss += loss_tensor.item()
-    return (correct/float(total), loss)
-
-
-def evaluate_valid(model, train_data, valid_data, lamb):
-    """ Evaluate the valid_data on the current model.
+def evaluate(model, train_data, data):
+    """ Evaluate the data on the current model.
 
     :param model: Module
     :param train_data: 2D FloatTensor
@@ -218,17 +190,15 @@ def evaluate_valid(model, train_data, valid_data, lamb):
     correct = 0
     loss = 0.
 
-    reg_loss = model.get_weight_norm() * lamb / 2.
-
-    for i, u in enumerate(valid_data["user_id"]):
+    for i, u in enumerate(data["user_id"]):
         inputs = Variable(train_data[u]).unsqueeze(0)
         output = model(inputs)
 
-        guess = output[0][valid_data["question_id"][i]].item() >= 0.5
-        target = valid_data["is_correct"][i]
+        guess = output[0][data["question_id"][i]].item() >= 0.5
+        target = data["is_correct"][i]
         if guess == target:
             correct += 1
-        loss_tensor = (output[0][valid_data["question_id"][i]] - target) ** 2. + reg_loss
+        loss_tensor = (output[0][data["question_id"][i]] - target) ** 2.
         loss += loss_tensor.item()
 
         total += 1
@@ -251,11 +221,16 @@ def main():
 
     # Set optimization hyperparameters.
     lr = 0.005
-    num_epoch = 200 # 150 is sufficient
-    lamb = 0.0
+    num_epoch = 170 
+    lamb = 0.0   # lamb_range = [0.001, 0.01, 0.1, 1]
     
     train(model, lr, lamb, train_matrix, zero_train_matrix,
           valid_data, num_epoch)
+
+    #test_acc, test_loss = evaluate(model, zero_train_matrix, test_data, lamb)
+    #print("Test Accuracy: {:.6f}\t "
+    #    "Test Loss: {:.6f}\t ".format(test_acc, test_loss))
+
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
