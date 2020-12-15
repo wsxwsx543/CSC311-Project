@@ -63,5 +63,5 @@ Plot for lambda = 1.0.
 
 ![Alt Text](https://github.com/wsxwsx543/CSC311-Project/blob/kaka/starter_code/part_a/images/part_e/summary.png)
 
-We can see model without regularization performs better, as it has a higher maximum validation accuracy. The final validaiton accuracy is 0.690375 and test accuracy 0.691787.
+We can see model without regularization performs better, as it has a higher maximum validation accuracy. As lambda increases, the maximum validation accuracy decreases. The final validaiton accuracy is 0.690375 and test accuracy 0.691787.
 
