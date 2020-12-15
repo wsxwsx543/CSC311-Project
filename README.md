@@ -35,3 +35,14 @@ Plot for k = 500, learning rate = 0.001, num epoch = 300.
 ![Alt Text](https://github.com/wsxwsx543/CSC311-Project/blob/kaka/starter_code/part_a/images/part_c/summary.png)
 
 The k that achieves the highest validation accracy (0.692210) is 10, so we choose it.
+
+
+## d)
+
+Plot for k = 10, learning rate = 0.005, num epoch = 170.
+![Alt Text](https://github.com/wsxwsx543/CSC311-Project/blob/kaka/starter_code/part_a/images/part_d/plot.png)
+
+The final test accuracy is 0.691787.
+
+As epoch increases, the training and validation accuracies increase and the training and validation losses decreas, all with a diminishing rate. The training accuracy goes from 0.534117 to 0.794683; training loss from 14125.214311 to 8637.385720; validation accuracy from 0.512278 to 0.690375; validation loss from 1786.580161 to 1409.755266. The validation accuracy and loss eventually converges. The final training accuracy is higher than the validation and test accuracy, which indicates a subtle trace of overfitting. 
+
