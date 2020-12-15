@@ -46,3 +46,22 @@ The final test accuracy is 0.691787.
 
 As epoch increases, the training and validation accuracies increase and the training and validation losses decrease, all with a diminishing rate. The training accuracy goes from 0.534117 to 0.794683; training loss from 14125.214311 to 8637.385720; validation accuracy from 0.512278 to 0.690375; validation loss from 1786.580161 to 1409.755266. The validation accuracy and loss eventually converge. The final training accuracy is higher than the validation and test accuracy; if more training is done, validation loss would increase, which indicates a subtle trace of overfitting. 
 
+
+## e)
+
+Plot for lambda = 0.001.
+![Alt Text](https://github.com/wsxwsx543/CSC311-Project/blob/kaka/starter_code/part_a/images/part_e/lambda%3D0dot001/plot.png)
+
+Plot for lambda = 0.01.
+![Alt Text](https://github.com/wsxwsx543/CSC311-Project/blob/kaka/starter_code/part_a/images/part_e/lambda%3D0dot01/plot.png)
+
+Plot for lambda = 0.1.
+![Alt Text](https://github.com/wsxwsx543/CSC311-Project/blob/kaka/starter_code/part_a/images/part_e/lambda%3D0dot1/plot.png)
+
+Plot for lambda = 1.0.
+![Alt Text](https://github.com/wsxwsx543/CSC311-Project/blob/kaka/starter_code/part_a/images/part_e/lambda%3D1/plot.png)
+
+![Alt Text](https://github.com/wsxwsx543/CSC311-Project/blob/kaka/starter_code/part_a/images/part_e/summary.png)
+
+We can see model without regularization performs better, as it has a higher maximum validation accuracy. As lambda increases, the maximum validation accuracy decreases. The final validaiton accuracy is 0.690375 and test accuracy 0.691787.
+
