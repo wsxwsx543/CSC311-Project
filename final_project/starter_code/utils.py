@@ -32,6 +32,28 @@ def _load_csv(path):
     return data
 
 
+def load_question_meta(path):
+    if not os.path.exists(path):
+        raise Exception("The specified path {} does not exist.".format(path))
+    
+    # Return a dictionary whose keys are question_id and values are the category of that question
+    data = {}
+    with open(path, "r") as csv_file:
+        reader = csv.reader(csv_file)
+        for row in reader:
+            try:
+                question_id = int(row[0])
+                cate = eval(row[1])
+                if question_id in data:
+                    print("GG")
+                if question_id not in data:
+                    data[question_id] = []
+                data[question_id].extend(cate)
+            except ValueError:
+                pass
+    return data
+
+
 def load_train_sparse(root_dir="/data"):
     """ Load the training data as a spare matrix representation.
 

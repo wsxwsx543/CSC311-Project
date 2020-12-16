@@ -13077,7 +13077,7 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Algorithm-Description">Algorithm Description<a class="anchor-link" href="#Algorithm-Description">&#182;</a></h1>
+<h1 id="Part-B">Part B<a class="anchor-link" href="#Part-B">&#182;</a></h1><h1 id="Algorithm-Description">Algorithm Description<a class="anchor-link" href="#Algorithm-Description">&#182;</a></h1>
 </div>
 </div>
 </div>
@@ -13087,7 +13087,7 @@ div#notebook {
 <h2 id="Algorithm-Idea">Algorithm Idea<a class="anchor-link" href="#Algorithm-Idea">&#182;</a></h2><p>In this part, we modified the <strong>item response</strong> algorithm and we would expect the item response algorithm with our extension should have a better performance. There are two main modifications in our algorithm:</p>
 <ul>
 <li><p>Apply item response algorithm on each category of the questions.</p>
-<p><strong>Explanation:</strong> Split the questions into different categories: <strong>Number, Algebra, Geometry, Statistics and Other</strong>. Then based on those questions, split the original dataset into 5 sub-datasets. (i.e. For each sub-dataset, it only records the responses to that category of question.) For example, if question 1 is a <strong>Number</strong> question, then all responses of question 1 should be in the sub-dataset that records <strong>Number</strong> question.</p>
+<p><strong>Explanation:</strong> Split the questions into different categories: <strong>Number, Algebra, Geometry, Statistics and Other</strong>. The reason why we split dataset in this way is when we deal with the dataset, it is interesting to find even all the questions are belong to at least one of those four categories. Then based on those questions, split the original dataset into 5 sub-datasets. (i.e. For each sub-dataset, it only records the responses to that category of question.) For example, if question 1 is a <strong>Number</strong> question, then all responses of question 1 should be in the sub-dataset that records <strong>Number</strong> question.</p>
 </li>
 </ul>
 <ul>

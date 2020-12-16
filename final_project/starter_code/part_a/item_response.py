@@ -16,9 +16,7 @@ def sigmoid(x):
 
 def neg_log_likelihood(data, theta, beta):
     """ Compute the negative log-likelihood.
-
     You may optionally replace the function arguments to receive a matrix.
-
     :param data: A dictionary {user_id: list, question_id: list,
     is_correct: list}
     :param theta: Vector
@@ -51,14 +49,11 @@ def neg_log_likelihood(data, theta, beta):
 
 def update_theta_beta(data, lr, theta, beta):
     """ Update theta and beta using gradient descent.
-
     You are using alternating gradient descent. Your update should look:
     for i in iterations ...
         theta <- new_theta
         beta <- new_beta
-
     You may optionally replace the function arguments to receive a matrix.
-
     :param data: A dictionary {user_id: list, question_id: list,
     is_correct: list}
     :param lr: float
@@ -108,9 +103,7 @@ def update_theta_beta(data, lr, theta, beta):
 
 def irt(data, val_data, lr, iterations):
     """ Train IRT model.
-
     You may optionally replace the function arguments to receive a matrix.
-
     :param data: A dictionary {user_id: list, question_id: list,
     is_correct: list}
     :param val_data: A dictionary {user_id: list, question_id: list,
@@ -156,7 +149,6 @@ def evaluate(data, theta, beta):
     """ Evaluate the model given data and return the accuracy.
     :param data: A dictionary {user_id: list, question_id: list,
     is_correct: list}
-
     :param theta: Vector
     :param beta: Vector
     :return: float

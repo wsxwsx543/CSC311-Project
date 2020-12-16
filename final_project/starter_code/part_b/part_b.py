@@ -426,6 +426,11 @@ def split_data(data):
     return number, algebra, geometry, statistics, other
 
 def test_cluster_model(data, c, theta, beta, k):
+    NUMBER = 1
+    ALGEBRA = 17
+    GEOMETRY = 39
+    STATISTICS = 68
+
     number_questions = []
     algebra_questions = []
     geometry_questions = []
@@ -477,8 +482,8 @@ def test_cluster_model(data, c, theta, beta, k):
         x = (curr_k[q]*(curr_theta[u]-curr_beta[q])).sum()
         p_a = sigmoid(x)*(1-c)+c
         pred.append(p_a >= 0.5)
-    return np.sum(test_data["is_correct"] == np.array(pred)) \
-            / len(test_data["is_correct"])
+    return np.sum(data["is_correct"] == np.array(pred)) \
+            / len(data["is_correct"])
 
 
 def train_category(train, valid, iterations, lr, c):
