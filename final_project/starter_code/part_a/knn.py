@@ -6,10 +6,8 @@ import matplotlib.pyplot as plt
 def knn_impute_by_user(matrix, valid_data, k):
     """ Fill in the missing values using k-Nearest Neighbors based on
     student similarity. Return the accuracy on valid_data.
-
     See https://scikit-learn.org/stable/modules/generated/sklearn.
     impute.KNNImputer.html for details.
-
     :param matrix: 2D sparse matrix
     :param valid_data: A dictionary {user_id: list, question_id: list,
     is_correct: list}
@@ -26,7 +24,6 @@ def knn_impute_by_user(matrix, valid_data, k):
 def knn_impute_by_item(matrix, valid_data, k):
     """ Fill in the missing values using k-Nearest Neighbors based on
     question similarity. Return the accuracy on valid_data.
-
     :param matrix: 2D sparse matrix
     :param valid_data: A dictionary {user_id: list, question_id: list,
     is_correct: list}
